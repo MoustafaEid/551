@@ -1,6 +1,8 @@
 package com.steganography;
 
 import android.app.Activity;
+
+//comment added for testing - aj
 import android.os.Bundle;
 import android.widget.TextView;
 public class steganography extends Activity {
@@ -9,5 +11,6 @@ public class steganography extends Activity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
+        System.out.println("test");
     }
 }
