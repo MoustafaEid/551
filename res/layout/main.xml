@@ -1,19 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
-<TableLayout xmlns:android = "http://schemas.android.com/apk/res/android"
-             android:background    = "#AEAEAE"
-             android:layout_height = "fill_parent"
-             android:layout_width  = "fill_parent"
-             >
-    <TableRow>
-	    <Button android:layout_gravity      = "center"
-	            android:layout_height       = "wrap_content"
-	            android:layout_marginBottom = "2px"
-	            android:layout_marginLeft   = "5px"
-	            android:layout_marginRight  = "5px"
-	            android:layout_marginTop    = "2px"
-	            android:layout_width        = "fill_parent"
-	            android:text                = "Start New Conversation"
-	            />
+<TableLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content"
+    android:stretchColumns="*"
+    android:background="#AEAEAE" >
+	
+    <TableRow android:layout_width="match_parent" >
+
+	    <Button
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:onClick="selfDestruct"
+	        android:text="Start New Conversation" />
+
     </TableRow>
     <TableRow>
 		<TableLayout xmlns:android="http://schemas.android.com/apk/res/android"
@@ -43,4 +42,7 @@
 	              android:typeface            = "monospace"
 	              />
 	</TableRow>
+
+
+
 </TableLayout>

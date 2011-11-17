@@ -4,6 +4,7 @@ import android.app.Activity;
 
 //comment added for testing - aj
 import android.os.Bundle;
+import android.view.View;
 import android.widget.TextView;
 public class steganography extends Activity {
     /** Called when the activity is first created. */
@@ -11,6 +12,9 @@ public class steganography extends Activity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
-        System.out.println("test");
+    }
+    
+    public void selfDestruct(View view) {
+        // Kabloey
     }
 }
