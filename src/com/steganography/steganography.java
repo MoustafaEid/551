@@ -3,8 +3,10 @@ package com.steganography;
 import java.io.File;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.ContentResolver;
 import android.content.ContentValues;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.net.Uri;
@@ -14,8 +16,10 @@ import android.provider.Contacts.People;
 import android.provider.ContactsContract;
 import android.provider.ContactsContract.CommonDataKinds;
 import android.provider.MediaStore;
+import android.text.Editable;
 import android.util.Log;
 import android.view.View;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -29,15 +33,19 @@ public class steganography extends Activity {
     private static int TAKE_PICTURE = 1;
     private static int CONTACT_PICKER_RESULT = 2;
     private static int FILE_BROWSE = 3;
-    private Uri outputFileUri;
+
+    private Uri capturedImageURI;
+    private String passPhrase;
+    private String hiddenText;
     
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        
+    public void onCreate(Bundle savedInstanceState)
+    {
+        super.onCreate(savedInstanceState);    
         setContentView(R.layout.main);
     }
     
-    public void caputreEncrypt(View view) {
+    public void caputreEncrypt(View view)
+    {
         takePhoto();
     }
     
@@ -46,43 +54,117 @@ public class steganography extends Activity {
         browseForImage();
     }
     
+    private void takePhoto()
+    {        
+        String fileName = "capture-" + System.currentTimeMillis() + ".jpg";
+        Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        File file = new File(Environment.getExternalStorageDirectory(), fileName);
+ 
+        capturedImageURI = Uri.fromFile(file);
+        intent.putExtra(MediaStore.EXTRA_OUTPUT, capturedImageURI);
+        startActivityForResult(intent, TAKE_PICTURE);
+    }
+    
     private void browseForImage()
     {
         Intent intent = new Intent("org.openintents.action.PICK_FILE");
         startActivityForResult(intent, FILE_BROWSE);
     }
-    private void takePhoto()
+    
+    private void promptForHidenText()
     {
-        Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-        File file = new File(Environment.getExternalStorageDirectory(), "test.jpg");
- 
-        outputFileUri = Uri.fromFile(file);
-        intent.putExtra(MediaStore.EXTRA_OUTPUT, outputFileUri);
-        startActivityForResult(intent, TAKE_PICTURE);
+        final EditText input = new EditText(this);
+        
+        new AlertDialog.Builder(this)
+        .setTitle("Enter the text you wish to hide")
+        .setView(input)
+        .setPositiveButton("Ok", new DialogInterface.OnClickListener()
+        {
+            public void onClick(DialogInterface dialog, int whichButton)
+            {
+                hiddenText = input.getText().toString();
+                embedHiddenTextIntoPicture();
+            }
+        }).setNegativeButton("Cancel", new DialogInterface.OnClickListener() 
+        {
+            public void onClick(DialogInterface dialog, int whichButton) 
+            {
+                deleteCapturedImage();
+            }
+        }).show();
+    }
+    
+    public void promptForPassPhrase()
+    {
+        final EditText input = new EditText(this);
+        
+        new AlertDialog.Builder(this)
+        .setTitle("Enter a Passphrase")
+        .setView(input)
+        .setPositiveButton("Ok", new DialogInterface.OnClickListener()
+        {
+            public void onClick(DialogInterface dialog, int whichButton)
+            {
+                passPhrase = input.getText().toString();
+                promptForHidenText();
+            }
+        }).setNegativeButton("Cancel", new DialogInterface.OnClickListener()
+        {
+            public void onClick(DialogInterface dialog, int whichButton)
+            {
+                deleteCapturedImage();
+            }
+        }).show();
+    }
+    
+    private void embedHiddenTextIntoPicture()
+    {
+        /* 
+         * Manipulate picture here
+         * Global variables to use:
+         *    private Uri capturedImageURI => Contains the path to the captured image (capturedImageURI.getPath())
+         *    private String passPhrase => User's passphrase
+         *    private String hiddenText => Hidden text that should be embedded in the captured images
+         *    All the variables above should be populated and valid at this point
+         */
+        
+        
+        // send picture in MMS
+        sendMMS();
+    }
+    
+    private void sendMMS()
+    {
+        Intent sendIntent = new Intent(Intent.ACTION_SEND);  
+        sendIntent.putExtra(Intent.EXTRA_STREAM, Uri.parse(capturedImageURI.toString()));
+        sendIntent.setType("image/jpg");  
+        startActivityForResult(sendIntent, CONTACT_PICKER_RESULT);
+    }
+    
+    private void deleteCapturedImage()
+    {
+        File capturedImage = new File(capturedImageURI.getPath());
+        Boolean x = capturedImage.delete();
+        
     }
     @Override
     //outputFileUri.uriString
-    protected void onActivityResult(int requestCode, int resultCode, Intent data){
- 
+    protected void onActivityResult(int requestCode, int resultCode, Intent data)
+    {
+        int i=1;
         if (requestCode == TAKE_PICTURE)
         {
-            {
-                int i;
-                Intent sendIntent = new Intent(Intent.ACTION_SEND); 
-                sendIntent.putExtra("sms_body", "some text"); 
-                sendIntent.putExtra(Intent.EXTRA_STREAM, Uri.parse(outputFileUri.toString()));
-                sendIntent.setType("image/png");  
-                startActivityForResult(sendIntent, CONTACT_PICKER_RESULT);
-            }
+            promptForPassPhrase();
         }
         else if( requestCode == CONTACT_PICKER_RESULT)
         {
-            
+            deleteCapturedImage();
         }
         else if( requestCode == FILE_BROWSE )
         {
             // TheFilePath contains filepath to the browsed file.
-            if (resultCode==RESULT_OK && data!=null && data.getData()!=null) {
+            if (resultCode==RESULT_OK && data!=null && data.getData()!=null) 
+            {
                 String theFilePath = data.getData().getPath();
                 
             }
