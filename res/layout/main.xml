@@ -8,41 +8,19 @@
     <TableRow android:layout_width="match_parent" >
 
 	    <Button
+	        android:id="@+id/button1"
 	        android:layout_width="wrap_content"
 	        android:layout_height="wrap_content"
-	        android:onClick="selfDestruct"
-	        android:text="Start New Conversation" />
+	        android:onClick="caputreEncrypt"
+	        android:text="Capture and Encrypt" />
 
     </TableRow>
-    <TableRow>
-		<TableLayout xmlns:android="http://schemas.android.com/apk/res/android"
-		             android:layout_height      = "fill_parent"
-		             android:layout_marginLeft  = "5px"
-		             android:layout_marginRight = "5px"
-		             android:layout_width       = "fill_parent"
-		             >
-		    <TableRow>
-		        <TextView android:text  = "Pic"
-		                  android:layout_width = "50px" />
-		        <TextView android:text  = "Hey dude! This was sent in secret"
-		                  android:layout_width = "fill_parent" /> 
-		    </TableRow>                
-		</TableLayout>
-	</TableRow>
-    <TableRow>
-	    <TextView android:layout_gravity      = "center"
-	              android:layout_height       = "wrap_content"
-	              android:layout_marginBottom = "2px"
-	              android:layout_marginLeft   = "5px"
-	              android:layout_marginRight  = "5px"
-	              android:layout_marginTop    = "2px"
-	              android:layout_width        = "fill_parent"
-	              android:text                = "Mobile Steganographer"
-	              android:textColor           = "#000000"
-	              android:typeface            = "monospace"
-	              />
-	</TableRow>
 
-
+    <Button
+        android:id="@+id/button2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Decrypt"
+        android:onClick="Decrypt" />
 
 </TableLayout>
