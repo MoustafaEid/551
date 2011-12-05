@@ -35,7 +35,10 @@ public class steganography extends Activity {
     private static int FILE_BROWSE = 3;
 
     private Uri capturedImageURI;
-    private String passPhrase;
+    private String receivedPictureFilePath;
+    
+    private String encryptionPassPhrase;
+    private String decryptionPassPhrase;
     private String hiddenText;
     
     public void onCreate(Bundle savedInstanceState)
@@ -94,7 +97,7 @@ public class steganography extends Activity {
         }).show();
     }
     
-    public void promptForPassPhrase()
+    public void promptForEncryptionPassPhrase()
     {
         final EditText input = new EditText(this);
         
@@ -105,8 +108,31 @@ public class steganography extends Activity {
         {
             public void onClick(DialogInterface dialog, int whichButton)
             {
-                passPhrase = input.getText().toString();
+                encryptionPassPhrase = input.getText().toString();
                 promptForHidenText();
+            }
+        }).setNegativeButton("Cancel", new DialogInterface.OnClickListener()
+        {
+            public void onClick(DialogInterface dialog, int whichButton)
+            {
+                deleteCapturedImage();
+            }
+        }).show();
+    }
+
+    public void promptForDecryptionPassPhrase()
+    {
+        final EditText input = new EditText(this);
+        
+        new AlertDialog.Builder(this)
+        .setTitle("Enter a Passphrase")
+        .setView(input)
+        .setPositiveButton("Ok", new DialogInterface.OnClickListener()
+        {
+            public void onClick(DialogInterface dialog, int whichButton)
+            {
+                decryptionPassPhrase = input.getText().toString();
+                extractHiddenTextFromPicture();
             }
         }).setNegativeButton("Cancel", new DialogInterface.OnClickListener()
         {
@@ -123,7 +149,7 @@ public class steganography extends Activity {
          * Manipulate picture here
          * Global variables to use:
          *    private Uri capturedImageURI => Contains the path to the captured image (capturedImageURI.getPath())
-         *    private String passPhrase => User's passphrase
+         *    private String encryptionPassPhrase => User's passphrase to encrypt the text into the image
          *    private String hiddenText => Hidden text that should be embedded in the captured images
          *    All the variables above should be populated and valid at this point
          */
@@ -131,6 +157,42 @@ public class steganography extends Activity {
         
         // send picture in MMS
         sendMMS();
+    }
+    
+    private void extractHiddenTextFromPicture()
+    {
+        /* 
+         * Manipulate picture here
+         * Global variables to use:
+         *    private File receivedPictureFilePath => The path to the image that needs to be encrypted
+         *    private String decryptionPassPhrase => User's passphrase to encrypt the text into the image
+         *    All the variables above should be populated and valid at this point
+         */
+        
+        String decryptedText = "Decrypted Text Goes Here!";
+        
+        showDecryptedText(decryptedText);
+    }
+    
+    private void showDecryptedText(String decryptedText)
+    {
+        new AlertDialog.Builder(this)
+        .setTitle("Decrypted Text")
+        .setMessage(decryptedText)
+        .setPositiveButton("Ok", new DialogInterface.OnClickListener()
+        {
+            public void onClick(DialogInterface dialog, int whichButton)
+            {
+                // Exit dialog
+            }
+        }).setNegativeButton("Delete Image", new DialogInterface.OnClickListener()
+        {
+            public void onClick(DialogInterface dialog, int whichButton)
+            {
+                // delete browsed image
+                deleteReceivedImage();
+            }
+        }).show();
     }
     
     private void sendMMS()
@@ -144,8 +206,13 @@ public class steganography extends Activity {
     private void deleteCapturedImage()
     {
         File capturedImage = new File(capturedImageURI.getPath());
-        Boolean x = capturedImage.delete();
-        
+        capturedImage.delete();
+    }
+    
+    private void deleteReceivedImage()
+    {
+        File receivedImage = new File(receivedPictureFilePath);
+        receivedImage.delete();        
     }
     @Override
     //outputFileUri.uriString
@@ -154,7 +221,7 @@ public class steganography extends Activity {
         int i=1;
         if (requestCode == TAKE_PICTURE)
         {
-            promptForPassPhrase();
+            promptForEncryptionPassPhrase();
         }
         else if( requestCode == CONTACT_PICKER_RESULT)
         {
@@ -162,11 +229,11 @@ public class steganography extends Activity {
         }
         else if( requestCode == FILE_BROWSE )
         {
-            // TheFilePath contains filepath to the browsed file.
+            // TheFilePath contains file path to the browsed file.
             if (resultCode==RESULT_OK && data!=null && data.getData()!=null) 
             {
-                String theFilePath = data.getData().getPath();
-                
+                receivedPictureFilePath = data.getData().getPath();
+                promptForDecryptionPassPhrase();                
             }
         }
     }
