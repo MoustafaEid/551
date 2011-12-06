@@ -1,6 +1,14 @@
 package com.steganography;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.FilterOutputStream;
+import java.io.IOException;
+
+import com.steganography.F5.Extract;
+import com.steganography.F5.JpegEncoder;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -9,6 +17,7 @@ import android.content.ContentValues;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
@@ -153,10 +162,30 @@ public class steganography extends Activity {
          *    private String hiddenText => Hidden text that should be embedded in the captured images
          *    All the variables above should be populated and valid at this point
          */
+        int quality    = 80; // Default for compression ratio
+        String comment = ""; // Irrelavent
         
-        
-        // send picture in MMS
-        sendMMS();
+        // Load the camera shot
+        try {
+            FileOutputStream dataOut = new FileOutputStream(capturedImageURI.toString()+".out");
+            
+            Bitmap image = BitmapFactory.decodeFile(capturedImageURI.getPath());
+            
+            // Embed the message
+            JpegEncoder jpg = new JpegEncoder(image, quality, dataOut, comment);
+            jpg.Compress(hiddenText, encryptionPassPhrase);
+            
+            // Delete the original and change the resource to point to the embedded image
+            File capturedImage = new File(capturedImageURI.getPath());
+            capturedImage.delete();
+            capturedImageURI = Uri.parse(capturedImageURI.toString()+".out");
+            
+            // send picture in MMS
+            sendMMS();
+        } catch (FileNotFoundException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
     }
     
     private void extractHiddenTextFromPicture()
@@ -169,7 +198,18 @@ public class steganography extends Activity {
          *    All the variables above should be populated and valid at this point
          */
         
-        String decryptedText = "Decrypted Text Goes Here!";
+        String decryptedText = "";
+        FileInputStream imageReader;
+        try {
+            imageReader = new FileInputStream(receivedPictureFilePath);
+            Extract.extract(imageReader, receivedPictureFilePath.length(), decryptedText, decryptionPassPhrase);
+        } catch (FileNotFoundException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
         
         showDecryptedText(decryptedText);
     }

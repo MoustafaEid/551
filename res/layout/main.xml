@@ -5,7 +5,7 @@
     android:stretchColumns="*"
     android:background="#AEAEAE" >
 	
-    <TableRow android:layout_width="match_parent" >
+    <TableRow android:layout_width="fill_parent" >
 
 	    <Button
 	        android:id="@+id/button1"
