@@ -48,12 +48,8 @@ public class steganography extends Activity {
         setContentView(R.layout.main);
     }
     
-<<<<<<< HEAD
     public void captureEncrypt(View view)
-=======
     /* This method is triggered when the Capture and Encrypt button is clicked */
-    public void caputreEncrypt(View view)
->>>>>>> 50b8fbc55c85226685ab0816cfc4cc9118089d5a
     {
         Log.v(LOG_TAG, "Inside captureEncrypt");
         takePhoto();
@@ -95,11 +91,8 @@ public class steganography extends Activity {
         intent.setAction(Intent.ACTION_GET_CONTENT);
         startActivityForResult(intent, FILE_BROWSE);
     }
-    
-<<<<<<< HEAD
-=======
+
     /* This method display a dialog that prompts the user for the text to be hidden in the picture */
->>>>>>> 50b8fbc55c85226685ab0816cfc4cc9118089d5a
     private void promptForHiddenText()
     {
         final EditText input = new EditText(this);
@@ -177,7 +170,6 @@ public class steganography extends Activity {
         }).show();
     }
     
-<<<<<<< HEAD
     private Bitmap loadDownScaledBitmap(Uri path)
     {
         Bitmap largeBitmap = BitmapFactory.decodeFile(path.getPath());
@@ -190,9 +182,7 @@ public class steganography extends Activity {
                                    largeBitmap.getHeight(), matrix, false);
     }
     
-=======
     /* This method encrypts the text into the captured picture */
->>>>>>> 50b8fbc55c85226685ab0816cfc4cc9118089d5a
     private void embedHiddenTextIntoPicture()
     {
         /* 
@@ -224,14 +214,9 @@ public class steganography extends Activity {
             //capturedImage.delete();
             capturedImageURI = Uri.parse("file:///sdcard/embeddedImage.jpg");
             
-<<<<<<< HEAD
             // Send picture in MMS
             Log.v(LOG_TAG, "Sending MMS...");
             sendMMS();
-=======
-            // send picture
-            sendImage();
->>>>>>> 50b8fbc55c85226685ab0816cfc4cc9118089d5a
         } catch (FileNotFoundException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
@@ -293,7 +278,7 @@ public class steganography extends Activity {
     
     
     /* This method prompts the user to send captured image with the encrypted text */
-    private void sendImage()
+    private void sendMMS()
     {
         Log.v(LOG_TAG, "Inside sendMMS");
         
