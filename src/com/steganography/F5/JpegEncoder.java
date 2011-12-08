@@ -26,6 +26,7 @@ import java.io.OutputStream;
 import java.util.Vector;
 
 import android.graphics.Bitmap;
+import android.util.Log;
 
 /**
  * JpegEncoder - The JPEG main program which performs a jpeg compression of an
@@ -1668,7 +1669,7 @@ class JpegInfo {
      */
 
     private void getYCCArray() {
-        final int values[] = new int[this.imageWidth * this.imageHeight];
+        final int values[] = new int[this.imageWidth];
         int r, g, b, y, x;
         // In order to minimize the chance that grabPixels will throw an
         // exception
@@ -1678,7 +1679,7 @@ class JpegInfo {
         // However, for a situation where memory overhead is a concern, this may
         // be
         // the only choice.
-        this.imageobj.getPixels(values, 0, this.imageWidth, 0, 0, this.imageWidth, this.imageHeight);
+        //this.imageobj.getPixels(values, 0, this.imageWidth, 0, 0, this.imageWidth, this.imageHeight);
 
         this.MaxHsampFactor = 1;
         this.MaxVsampFactor = 1;
@@ -1710,8 +1711,11 @@ class JpegInfo {
         final float Cb1[][] = new float[this.compHeight[0]][this.compWidth[0]];
         float Cb2[][] = new float[this.compHeight[1]][this.compWidth[1]];
         float Cr2[][] = new float[this.compHeight[2]][this.compWidth[2]];
-        int index = 0;
+        
         for (y = 0; y < this.imageHeight; ++y) {
+            int index = 0;
+            this.imageobj.getPixels(values, 0, this.imageWidth, 0, y, this.imageWidth, 1);
+            
             for (x = 0; x < this.imageWidth; ++x) {
                 r = values[index] >> 16 & 0xff;
                 g = values[index] >> 8 & 0xff;

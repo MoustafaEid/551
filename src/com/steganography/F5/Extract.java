@@ -25,9 +25,10 @@ public class Extract {
             40, 44, 53, 10, 19, 23, 32, 39, 45, 52, 54, 20, 22, 33, 38, 46, 51, 55, 60, 21, 34, 37, 47, 50, 56, 59, 61,
             35, 36, 48, 49, 57, 58, 62, 63 };
 
-    public static void extract(final InputStream fis, final int flength, String fos, final String password)
+    public static String extract(final InputStream fis, final long flength, final String password)
             throws IOException {
-        carrier = new byte[flength];
+        String fos = "";
+        carrier = new byte[(int) flength];
         fis.read(carrier);
         final HuffmanDecode hd = new HuffmanDecode(carrier);
         System.out.println("Huffman decoding starts");
@@ -110,7 +111,9 @@ public class Extract {
                     if (availableExtractedBits == 8) {
                         // remove pseudo random pad
                         extractedByte ^= random.getNextByte();
-                        fos += extractedByte;
+                        fos += (char)extractedByte;
+                        System.out.println("Current String: " + fos);
+                        System.out.println("Extracted Byte: " + (char)extractedByte);
                         extractedByte = 0;
                         availableExtractedBits = 0;
                         nBytesExtracted++;
@@ -141,7 +144,9 @@ public class Extract {
                 if (availableExtractedBits == 8) {
                     // remove pseudo random pad
                     extractedByte ^= random.getNextByte();
-                    fos += extractedByte;
+                    fos += (char)extractedByte;
+                    System.out.println("Current String: " + fos);
+                    System.out.println("Extracted Byte: " + (char)extractedByte);
                     extractedByte = 0;
                     availableExtractedBits = 0;
                     nBytesExtracted++;
@@ -155,5 +160,7 @@ public class Extract {
             System.out.println("Incomplete file: only " + nBytesExtracted + " of " + extractedFileLength
                     + " bytes extracted");
         }
+        
+        return fos;
     }
 }

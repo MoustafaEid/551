@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.FilterOutputStream;
 import java.io.IOException;
 
 import com.steganography.F5.Extract;
@@ -12,26 +11,17 @@ import com.steganography.F5.JpegEncoder;
 
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.content.ContentResolver;
-import android.content.ContentValues;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Matrix;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
-import android.provider.Contacts.People;
-import android.provider.ContactsContract;
-import android.provider.ContactsContract.CommonDataKinds;
 import android.provider.MediaStore;
-import android.text.Editable;
-import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
-import android.widget.ImageView;
-import android.widget.TextView;
-import android.widget.Toast;
 import android.util.Log;
 
 public class steganography extends Activity {
@@ -44,7 +34,7 @@ public class steganography extends Activity {
     private static int FILE_BROWSE = 3;
 
     private Uri capturedImageURI;
-    private String receivedPictureFilePath;
+    private Uri receivedPictureFilePath;
     
     private String encryptionPassPhrase;
     private String decryptionPassPhrase;
@@ -52,22 +42,26 @@ public class steganography extends Activity {
     
     public void onCreate(Bundle savedInstanceState)
     {
+        Log.v(LOG_TAG, "Inside onCreate");
         super.onCreate(savedInstanceState);    
         setContentView(R.layout.main);
     }
     
-    public void caputreEncrypt(View view)
+    public void captureEncrypt(View view)
     {
+        Log.v(LOG_TAG, "Inside captureEncrypt");
         takePhoto();
     }
     
     public void Decrypt(View view)
     {
+        Log.v(LOG_TAG, "Inside Decrypt");
         browseForImage();
     }
     
     private void takePhoto()
     {        
+        Log.v(LOG_TAG, "Inside takePhoto");
         String fileName = "capture-" + System.currentTimeMillis() + ".jpg";
         Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
         File file = new File(Environment.getExternalStorageDirectory(), fileName);
@@ -79,11 +73,16 @@ public class steganography extends Activity {
     
     private void browseForImage()
     {
-        Intent intent = new Intent("org.openintents.action.PICK_FILE");
+        Log.v(LOG_TAG, "Inside browseForImage");
+        
+        Intent intent = new Intent();
+        intent.addCategory(Intent.CATEGORY_OPENABLE);
+        intent.setType("image/jpeg");
+        intent.setAction(Intent.ACTION_GET_CONTENT);
         startActivityForResult(intent, FILE_BROWSE);
     }
     
-    private void promptForHidenText()
+    private void promptForHiddenText()
     {
         final EditText input = new EditText(this);
         
@@ -108,6 +107,7 @@ public class steganography extends Activity {
     
     public void promptForEncryptionPassPhrase()
     {
+        Log.v(LOG_TAG, "Inside promptForEncryptionPassPhrase");
         final EditText input = new EditText(this);
         
         new AlertDialog.Builder(this)
@@ -118,7 +118,7 @@ public class steganography extends Activity {
             public void onClick(DialogInterface dialog, int whichButton)
             {
                 encryptionPassPhrase = input.getText().toString();
-                promptForHidenText();
+                promptForHiddenText();
             }
         }).setNegativeButton("Cancel", new DialogInterface.OnClickListener()
         {
@@ -131,6 +131,7 @@ public class steganography extends Activity {
 
     public void promptForDecryptionPassPhrase()
     {
+        Log.v(LOG_TAG, "Inside promptForDecryptionPassPhrase");
         final EditText input = new EditText(this);
         
         new AlertDialog.Builder(this)
@@ -152,6 +153,18 @@ public class steganography extends Activity {
         }).show();
     }
     
+    private Bitmap loadDownScaledBitmap(Uri path)
+    {
+        Bitmap largeBitmap = BitmapFactory.decodeFile(path.getPath());
+        
+        // Set it to scale down by 50 percent
+        Matrix matrix = new Matrix();
+        matrix.postScale(0.10f, 0.10f);
+        
+        return Bitmap.createBitmap(largeBitmap, 0, 0, largeBitmap.getWidth(), 
+                                   largeBitmap.getHeight(), matrix, false);
+    }
+    
     private void embedHiddenTextIntoPicture()
     {
         /* 
@@ -162,25 +175,29 @@ public class steganography extends Activity {
          *    private String hiddenText => Hidden text that should be embedded in the captured images
          *    All the variables above should be populated and valid at this point
          */
-        int quality    = 80; // Default for compression ratio
+        int quality    = 100; // For the sake of speed
         String comment = ""; // Irrelavent
         
-        // Load the camera shot
         try {
-            FileOutputStream dataOut = new FileOutputStream(capturedImageURI.toString()+".out");
-            
-            Bitmap image = BitmapFactory.decodeFile(capturedImageURI.getPath());
+            FileOutputStream dataOut = new FileOutputStream(new File("/sdcard/embeddedImage.jpg"));
+          
+            // Load the camera shot
+            Log.v(LOG_TAG, "Starting load down scaled bitmap...");
+            Bitmap image = loadDownScaledBitmap(capturedImageURI);
             
             // Embed the message
             JpegEncoder jpg = new JpegEncoder(image, quality, dataOut, comment);
+            Log.v(LOG_TAG, "Starting compression...");
             jpg.Compress(hiddenText, encryptionPassPhrase);
             
             // Delete the original and change the resource to point to the embedded image
-            File capturedImage = new File(capturedImageURI.getPath());
-            capturedImage.delete();
-            capturedImageURI = Uri.parse(capturedImageURI.toString()+".out");
+            Log.v(LOG_TAG, "File location '" + this.getCacheDir() + "/embeddedImage.tmp'");
+            //File capturedImage = new File(capturedImageURI.getPath());
+            //capturedImage.delete();
+            capturedImageURI = Uri.parse("file:///sdcard/embeddedImage.jpg");
             
-            // send picture in MMS
+            // Send picture in MMS
+            Log.v(LOG_TAG, "Sending MMS...");
             sendMMS();
         } catch (FileNotFoundException e) {
             // TODO Auto-generated catch block
@@ -190,6 +207,7 @@ public class steganography extends Activity {
     
     private void extractHiddenTextFromPicture()
     {
+        Log.v(LOG_TAG, "Inside extractHiddenTextFromPicture");
         /* 
          * Manipulate picture here
          * Global variables to use:
@@ -197,12 +215,13 @@ public class steganography extends Activity {
          *    private String decryptionPassPhrase => User's passphrase to encrypt the text into the image
          *    All the variables above should be populated and valid at this point
          */
-        
+
         String decryptedText = "";
         FileInputStream imageReader;
         try {
-            imageReader = new FileInputStream(receivedPictureFilePath);
-            Extract.extract(imageReader, receivedPictureFilePath.length(), decryptedText, decryptionPassPhrase);
+            File file = new File(receivedPictureFilePath.getPath());
+            imageReader = new FileInputStream(file);
+            decryptedText = Extract.extract(imageReader, file.length(), decryptionPassPhrase);
         } catch (FileNotFoundException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
@@ -216,6 +235,7 @@ public class steganography extends Activity {
     
     private void showDecryptedText(String decryptedText)
     {
+        Log.v(LOG_TAG, "Inside showDecryptedText");
         new AlertDialog.Builder(this)
         .setTitle("Decrypted Text")
         .setMessage(decryptedText)
@@ -237,27 +257,40 @@ public class steganography extends Activity {
     
     private void sendMMS()
     {
-        Intent sendIntent = new Intent(Intent.ACTION_SEND);  
-        sendIntent.putExtra(Intent.EXTRA_STREAM, Uri.parse(capturedImageURI.toString()));
-        sendIntent.setType("image/jpg");  
-        startActivityForResult(sendIntent, CONTACT_PICKER_RESULT);
+        Log.v(LOG_TAG, "Inside sendMMS");
+        
+        Intent picMessageIntent = new Intent(android.content.Intent.ACTION_SEND);
+        picMessageIntent.setType("image/jpeg");
+        picMessageIntent.putExtra(Intent.EXTRA_STREAM, capturedImageURI);
+        
+        Intent htcIntent = new Intent("android.intent.action.SEND_MSG");
+        htcIntent.setType("image/jpeg");
+        htcIntent.putExtra(Intent.EXTRA_STREAM, capturedImageURI);
+        
+        Intent chooser = Intent.createChooser(picMessageIntent, "Send Method");
+        chooser.putExtra(Intent.EXTRA_INITIAL_INTENTS, new Intent[] {htcIntent});
+        startActivity(chooser);
     }
     
     private void deleteCapturedImage()
     {
+        Log.v(LOG_TAG, "Inside deleteCapturedImage");
         File capturedImage = new File(capturedImageURI.getPath());
         capturedImage.delete();
     }
     
     private void deleteReceivedImage()
     {
-        File receivedImage = new File(receivedPictureFilePath);
+        Log.v(LOG_TAG, "Inside deleteReceivedImage");
+        File receivedImage = new File(receivedPictureFilePath.getPath());
         receivedImage.delete();        
     }
+    
     @Override
-    //outputFileUri.uriString
     protected void onActivityResult(int requestCode, int resultCode, Intent data)
     {
+        Log.v(LOG_TAG, "Inside onActivityResult");
+        
         int i=1;
         if (requestCode == TAKE_PICTURE)
         {
@@ -272,7 +305,7 @@ public class steganography extends Activity {
             // TheFilePath contains file path to the browsed file.
             if (resultCode==RESULT_OK && data!=null && data.getData()!=null) 
             {
-                receivedPictureFilePath = data.getData().getPath();
+                receivedPictureFilePath = data.getData();
                 promptForDecryptionPassPhrase();                
             }
         }
