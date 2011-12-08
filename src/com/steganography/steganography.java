@@ -40,6 +40,7 @@ public class steganography extends Activity {
     private String decryptionPassPhrase;
     private String hiddenText;
     
+    /* Method that creates the main view */
     public void onCreate(Bundle savedInstanceState)
     {
         Log.v(LOG_TAG, "Inside onCreate");
@@ -47,18 +48,28 @@ public class steganography extends Activity {
         setContentView(R.layout.main);
     }
     
+<<<<<<< HEAD
     public void captureEncrypt(View view)
+=======
+    /* This method is triggered when the Capture and Encrypt button is clicked */
+    public void caputreEncrypt(View view)
+>>>>>>> 50b8fbc55c85226685ab0816cfc4cc9118089d5a
     {
         Log.v(LOG_TAG, "Inside captureEncrypt");
         takePhoto();
     }
     
+    /* This method is triggered when the Decrypt button is clicked */
     public void Decrypt(View view)
     {
         Log.v(LOG_TAG, "Inside Decrypt");
         browseForImage();
     }
     
+    /* This method triggers the camera to start taking a picture, saving it into the SD card with the
+     * name "capture-<ms>.jpg" where <ms> is the the difference, measured in milliseconds, between the current time and 
+     * midnight, January 1, 1970 UTC. To avoid overwriting another file with the same name
+     */
     private void takePhoto()
     {        
         Log.v(LOG_TAG, "Inside takePhoto");
@@ -71,6 +82,9 @@ public class steganography extends Activity {
         startActivityForResult(intent, TAKE_PICTURE);
     }
     
+    /* This method triggers the intent for a file manager to start browsing for a 
+     * JPEG image to decrypt it
+     */
     private void browseForImage()
     {
         Log.v(LOG_TAG, "Inside browseForImage");
@@ -82,6 +96,10 @@ public class steganography extends Activity {
         startActivityForResult(intent, FILE_BROWSE);
     }
     
+<<<<<<< HEAD
+=======
+    /* This method display a dialog that prompts the user for the text to be hidden in the picture */
+>>>>>>> 50b8fbc55c85226685ab0816cfc4cc9118089d5a
     private void promptForHiddenText()
     {
         final EditText input = new EditText(this);
@@ -100,11 +118,14 @@ public class steganography extends Activity {
         {
             public void onClick(DialogInterface dialog, int whichButton) 
             {
+                // User Cancelled the action, delete the captured image as there is no use for it.
                 deleteCapturedImage();
             }
         }).show();
     }
     
+    /* This method display a dialog that prompts the user for a passphrase to use to hide the text
+     * inside the captured image */
     public void promptForEncryptionPassPhrase()
     {
         Log.v(LOG_TAG, "Inside promptForEncryptionPassPhrase");
@@ -124,11 +145,14 @@ public class steganography extends Activity {
         {
             public void onClick(DialogInterface dialog, int whichButton)
             {
+                // User Cancelled the action, delete the captured image as there is no use for it.
                 deleteCapturedImage();
             }
         }).show();
     }
 
+    /* This method display a dialog that prompts the user for the passphrase that was used to encrypt text withing the
+     * the selected image. The passphrase will be used to decrypt the text */
     public void promptForDecryptionPassPhrase()
     {
         Log.v(LOG_TAG, "Inside promptForDecryptionPassPhrase");
@@ -148,11 +172,12 @@ public class steganography extends Activity {
         {
             public void onClick(DialogInterface dialog, int whichButton)
             {
-                deleteCapturedImage();
+                // User cancelled the action, the image has not been decrypted yet. Do nothing.
             }
         }).show();
     }
     
+<<<<<<< HEAD
     private Bitmap loadDownScaledBitmap(Uri path)
     {
         Bitmap largeBitmap = BitmapFactory.decodeFile(path.getPath());
@@ -165,6 +190,9 @@ public class steganography extends Activity {
                                    largeBitmap.getHeight(), matrix, false);
     }
     
+=======
+    /* This method encrypts the text into the captured picture */
+>>>>>>> 50b8fbc55c85226685ab0816cfc4cc9118089d5a
     private void embedHiddenTextIntoPicture()
     {
         /* 
@@ -196,15 +224,22 @@ public class steganography extends Activity {
             //capturedImage.delete();
             capturedImageURI = Uri.parse("file:///sdcard/embeddedImage.jpg");
             
+<<<<<<< HEAD
             // Send picture in MMS
             Log.v(LOG_TAG, "Sending MMS...");
             sendMMS();
+=======
+            // send picture
+            sendImage();
+>>>>>>> 50b8fbc55c85226685ab0816cfc4cc9118089d5a
         } catch (FileNotFoundException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
     }
     
+    /* This method extracts hidden text from a selected image using the passphrase that used to encrypt the text in
+     * the image */
     private void extractHiddenTextFromPicture()
     {
         Log.v(LOG_TAG, "Inside extractHiddenTextFromPicture");
@@ -233,6 +268,7 @@ public class steganography extends Activity {
         showDecryptedText(decryptedText);
     }
     
+    /* This method displays the extracted text from a selected image to the user */
     private void showDecryptedText(String decryptedText)
     {
         Log.v(LOG_TAG, "Inside showDecryptedText");
@@ -255,7 +291,9 @@ public class steganography extends Activity {
         }).show();
     }
     
-    private void sendMMS()
+    
+    /* This method prompts the user to send captured image with the encrypted text */
+    private void sendImage()
     {
         Log.v(LOG_TAG, "Inside sendMMS");
         
@@ -272,6 +310,7 @@ public class steganography extends Activity {
         startActivity(chooser);
     }
     
+    /* This method deletes the captured image from the SD card */
     private void deleteCapturedImage()
     {
         Log.v(LOG_TAG, "Inside deleteCapturedImage");
@@ -279,6 +318,7 @@ public class steganography extends Activity {
         capturedImage.delete();
     }
     
+    /* This method deletes the received image */
     private void deleteReceivedImage()
     {
         Log.v(LOG_TAG, "Inside deleteReceivedImage");
