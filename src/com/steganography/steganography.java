@@ -50,22 +50,29 @@ public class steganography extends Activity {
     private String decryptionPassPhrase;
     private String hiddenText;
     
+    /* Method that creates the main view */
     public void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);    
         setContentView(R.layout.main);
     }
     
+    /* This method is triggered when the Capture and Encrypt button is clicked */
     public void caputreEncrypt(View view)
     {
         takePhoto();
     }
     
+    /* This method is triggered when the Decrypt button is clicked */
     public void Decrypt(View view)
     {
         browseForImage();
     }
     
+    /* This method triggers the camera to start taking a picture, saving it into the SD card with the
+     * name "capture-<ms>.jpg" where <ms> is the the difference, measured in milliseconds, between the current time and 
+     * midnight, January 1, 1970 UTC. To avoid overwriting another file with the same name
+     */
     private void takePhoto()
     {        
         String fileName = "capture-" + System.currentTimeMillis() + ".jpg";
@@ -77,13 +84,17 @@ public class steganography extends Activity {
         startActivityForResult(intent, TAKE_PICTURE);
     }
     
+    /* This method triggers the intent for a file manager to start browsing for a 
+     * JPEG image to decrypt it
+     */
     private void browseForImage()
     {
         Intent intent = new Intent("org.openintents.action.PICK_FILE");
         startActivityForResult(intent, FILE_BROWSE);
     }
     
-    private void promptForHidenText()
+    /* This method display a dialog that prompts the user for the text to be hidden in the picture */
+    private void promptForHiddenText()
     {
         final EditText input = new EditText(this);
         
@@ -101,11 +112,14 @@ public class steganography extends Activity {
         {
             public void onClick(DialogInterface dialog, int whichButton) 
             {
+                // User Cancelled the action, delete the captured image as there is no use for it.
                 deleteCapturedImage();
             }
         }).show();
     }
     
+    /* This method display a dialog that prompts the user for a passphrase to use to hide the text
+     * inside the captured image */
     public void promptForEncryptionPassPhrase()
     {
         final EditText input = new EditText(this);
@@ -118,17 +132,20 @@ public class steganography extends Activity {
             public void onClick(DialogInterface dialog, int whichButton)
             {
                 encryptionPassPhrase = input.getText().toString();
-                promptForHidenText();
+                promptForHiddenText();
             }
         }).setNegativeButton("Cancel", new DialogInterface.OnClickListener()
         {
             public void onClick(DialogInterface dialog, int whichButton)
             {
+                // User Cancelled the action, delete the captured image as there is no use for it.
                 deleteCapturedImage();
             }
         }).show();
     }
 
+    /* This method display a dialog that prompts the user for the passphrase that was used to encrypt text withing the
+     * the selected image. The passphrase will be used to decrypt the text */
     public void promptForDecryptionPassPhrase()
     {
         final EditText input = new EditText(this);
@@ -147,11 +164,12 @@ public class steganography extends Activity {
         {
             public void onClick(DialogInterface dialog, int whichButton)
             {
-                deleteCapturedImage();
+                // User cancelled the action, the image has not been decrypted yet. Do nothing.
             }
         }).show();
     }
     
+    /* This method encrypts the text into the captured picture */
     private void embedHiddenTextIntoPicture()
     {
         /* 
@@ -180,14 +198,16 @@ public class steganography extends Activity {
             capturedImage.delete();
             capturedImageURI = Uri.parse(capturedImageURI.toString()+".out");
             
-            // send picture in MMS
-            sendMMS();
+            // send picture
+            sendImage();
         } catch (FileNotFoundException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
     }
     
+    /* This method extracts hidden text from a selected image using the passphrase that used to encrypt the text in
+     * the image */
     private void extractHiddenTextFromPicture()
     {
         /* 
@@ -214,6 +234,7 @@ public class steganography extends Activity {
         showDecryptedText(decryptedText);
     }
     
+    /* This method displays the extracted text from a selected image to the user */
     private void showDecryptedText(String decryptedText)
     {
         new AlertDialog.Builder(this)
@@ -235,7 +256,9 @@ public class steganography extends Activity {
         }).show();
     }
     
-    private void sendMMS()
+    
+    /* This method prompts the user to send captured image with the encrypted text */
+    private void sendImage()
     {
         Intent sendIntent = new Intent(Intent.ACTION_SEND);  
         sendIntent.putExtra(Intent.EXTRA_STREAM, Uri.parse(capturedImageURI.toString()));
@@ -243,12 +266,14 @@ public class steganography extends Activity {
         startActivityForResult(sendIntent, CONTACT_PICKER_RESULT);
     }
     
+    /* This method deletes the captured image from the SD card */
     private void deleteCapturedImage()
     {
         File capturedImage = new File(capturedImageURI.getPath());
         capturedImage.delete();
     }
     
+    /* This method deletes the received image */
     private void deleteReceivedImage()
     {
         File receivedImage = new File(receivedPictureFilePath);
